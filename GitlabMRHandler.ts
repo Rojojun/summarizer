@@ -538,7 +538,6 @@ export class GitlabMRHandler implements MRHandler {
 
         navigationChoices.push({
             name: chalk.gray('Cancel'),
-            short: 'Cancel',
             value: 'cancel',
         });
 
