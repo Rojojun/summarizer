@@ -1,15 +1,16 @@
-import {MRHandler} from "./MRHandler";
+import {Summarizer} from "./Summarizer";
 import {GitlabInfo} from "./GitlabInfo";
 import ora from "ora";
-import {AxiosResponse} from "axios";
+import {Axios, AxiosResponse} from "axios";
 import chalk from "chalk";
 import {GitLabChanges, GitLabCommit, GitLabMR, GitLabNote, GitLabProject, MRChoice, ProjectChoice} from "./gitlab";
 import inquirer from "inquirer";
 import * as gradient from "gradient-string";
 import 'dotenv/config';
 import Separator = inquirer.Separator;
+import * as string_decoder from "node:string_decoder";
 
-export class GitlabMRHandler implements MRHandler {
+export class GitlabMRSummarizer implements Summarizer {
     private readonly gitlabInfo: GitlabInfo;
     private allProjects: GitLabProject[] = [];
     private readonly pageSize = 10;
@@ -570,7 +571,7 @@ export class GitlabMRHandler implements MRHandler {
         return selectedMR;
     };
 
-    selectMergeRequest = async (project: GitLabProject): Promise<GitLabMR | null> => {
+    selectMergeRequest = async (client: string, project: GitLabProject): Promise<GitLabMR | null> => {
         console.log(chalk.green(`\n[INFO] Selected Project: ${project.name_with_namespace}`));
 
         let currentPage = 1;
@@ -596,7 +597,7 @@ export class GitlabMRHandler implements MRHandler {
             ]);
 
             if (tryAgain) {
-                return this.selectMergeRequest(project);
+                return this.selectMergeRequest(client, project);
             }
             return null;
         }
@@ -627,7 +628,7 @@ export class GitlabMRHandler implements MRHandler {
                 ]);
 
                 if (showDetails) {
-                    await this.showMRDetails(result, project);
+                    await this.showMRDetails(client, result, project);
                 }
 
                 console.log('');
@@ -825,7 +826,7 @@ export class GitlabMRHandler implements MRHandler {
         }
     };
 
-    showMRDetails = async (mr: GitLabMR, project: GitLabProject): Promise<void> => {
+    showMRDetails = async (client: string, mr: GitLabMR, project: GitLabProject): Promise<void> => {
         console.log(chalk.green(`\n[DETAILED INFO] MR !${mr.iid} - ${mr.title}`));
         console.log(chalk.gray('='.repeat(80)));
 
@@ -882,7 +883,7 @@ export class GitlabMRHandler implements MRHandler {
         }
 
         if (detailChoice === 'ai_analysis') {
-            await this.generateMRAnalysis(mr, project);
+            await this.generateMRAnalysis(client, mr, project);
             return;
         }
 
@@ -905,42 +906,23 @@ export class GitlabMRHandler implements MRHandler {
         console.log(chalk.blue('\n[INFO] Detailed information display complete'));
     };
 
-    private callGeminiAPI = async (prompt: string): Promise<string> => {
-        const apiKey = process.env.GEMINI_KEY
-
-        if (!apiKey) {
-            throw new Error('GEMINI_API_KEY not found in environment variables');
-        }
-
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: prompt
-                        }]
-                    }],
-                    generationConfig: {
-                        temperature: 0.7,
-                        topK: 40,
-                        topP: 0.95,
-                        maxOutputTokens: 8192,
-                    }
-                })
+    private callGeminiAPI = async (client: string, mr: GitLabMR, project: GitLabProject, commit: GitLabCommit[], changes: GitLabChanges[], notes: GitLabNote[]): Promise<string> => {
+        const response: AxiosResponse = await this.gitlabInfo.client.post(`http://localhost:8080/api/v1/request`,{
+                userID: client,
+                payload: mr.iid.toString(),
+                gitLabMR: mr,
+                gitLabProject: project,
+                gitLabCommits: commit,
+                gitLabChanges: changes,
+                gitLabNotes: notes,
             }
         );
 
-        if (!response.ok) {
+        if (response.status < 200 || response.status >= 300) {
             throw new Error(`Gemini API error: ${response.status}`);
         }
 
-        const data = await response.json();
-        return data.candidates[0].content.parts[0].text;
+        return response.data;
     };
 
     private createAnalysisPrompt = (
@@ -1001,7 +983,7 @@ ${userNotes.map((note, index) =>
         `;
     };
 
-    generateMRAnalysis = async (mr: GitLabMR, project: GitLabProject): Promise<void> => {
+    generateMRAnalysis = async (client: string, mr: GitLabMR, project: GitLabProject): Promise<void> => {
         console.log(chalk.blue('\n=== AI-Powered MR Analysis ==='));
         console.log(chalk.gray('Collecting comprehensive MR data...'));
 
@@ -1015,12 +997,14 @@ ${userNotes.map((note, index) =>
             ]);
 
             spinner.text = 'Preparing data for AI analysis...';
-
-            const prompt = this.createAnalysisPrompt(mr, project, commits, changes, notes);
-
             spinner.text = 'Generating analysis with Gemini AI...';
 
-            const analysis = await this.callGeminiAPI(prompt);
+            // const prompt = this.createAnalysisPrompt(mr, project, commits, changes, notes);
+            // const analysis = await this.callGeminiAPI(prompt);
+
+            // const analysis = await this.callGeminiAPI(client, mr.iid.toString());
+            const analysis = await this.callGeminiAPI(client, mr, project, commits, changes, notes);
+
 
             spinner.succeed(chalk.green('AI analysis completed!'));
 

@@ -11,7 +11,7 @@ export class GitlabInfo extends Info {
             headers: {
                 'PRIVATE-TOKEN': accessToken
             },
-            timeout: 40000
+            timeout: 100000
         })
     }
 
