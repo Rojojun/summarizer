@@ -13,13 +13,13 @@
   "devDependencies": {
     "@types/chalk": "^0.4.31",
     "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.9",
     "@types/node": "^24.3.1",
     "typescript": "^5.9.2"
   },
   "dependencies": {
     "@types/chalk-animation": "^1.6.3",
     "@types/gradient-string": "^1.1.6",
-    "@types/inquirer": "^9.0.9",
     "axios": "^1.11.0",
     "chalk-animation": "^2.0.3",
     "clipboardy": "^4.0.0",

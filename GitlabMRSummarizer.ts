@@ -4,11 +4,9 @@ import ora from "ora";
 import {Axios, AxiosResponse} from "axios";
 import chalk from "chalk";
 import {GitLabChanges, GitLabCommit, GitLabMR, GitLabNote, GitLabProject, MRChoice, ProjectChoice} from "./gitlab";
-import inquirer from "inquirer";
 import * as gradient from "gradient-string";
 import 'dotenv/config';
-import Separator = inquirer.Separator;
-import * as string_decoder from "node:string_decoder";
+import inquirer from "inquirer";
 
 export class GitlabMRSummarizer implements Summarizer {
     private readonly gitlabInfo: GitlabInfo;
@@ -146,7 +144,7 @@ export class GitlabMRSummarizer implements Summarizer {
 
 
         // navigationChoices.push({type: 'separator', line: chalk.gray('─'.repeat(60))});
-        navigationChoices.push(new Separator());
+        navigationChoices.push(new inquirer.Separator());
 
         if (currentPage > 1) {
             navigationChoices.push({
@@ -493,14 +491,16 @@ export class GitlabMRSummarizer implements Summarizer {
         const choices = this.createMRChoices(currentMRs);
 
         // 네비게이션 옵션
-        const createSeparator = (text: string = '') => ({
-            name: chalk.gray(text || '─'.repeat(60)),
-            value: '__separator__',
-            disabled: true,
-        });
+        // const createSeparator = (text: string = '') => ({
+        //     name: chalk.gray(text || '─'.repeat(60)),
+        //     short: 'value',
+        //     value: '__separator__',
+        //     disabled: true,
+        // });
 
-        const navigationChoices = [
-            createSeparator('─ Navigation ─')
+        const navigationChoices: any[] = [
+            new inquirer.Separator('─ Navigation ─')
+            // createSeparator('─ Navigation ─')
         ];
 
         if (currentPage > 1) {
@@ -925,64 +925,6 @@ export class GitlabMRSummarizer implements Summarizer {
         return response.data;
     };
 
-    private createAnalysisPrompt = (
-        mr: GitLabMR,
-        project: GitLabProject,
-        commits: GitLabCommit[],
-        changes: GitLabChanges[],
-        notes: GitLabNote[]
-    ): string => {
-        const userNotes = notes.filter(note => !note.system);
-
-        return `
-다음은 GitLab의 Merge Request 정보입니다. 이를 개발 연구노트 형태로 분석해주세요.
-
-## 프로젝트 정보
-- 프로젝트: ${project.name_with_namespace}
-- MR 제목: ${mr.title}
-- 작성자: ${mr.author.name} (@${mr.author.username})
-- 브랜치: ${mr.source_branch} → ${mr.target_branch}
-- 상태: ${mr.state}
-- 생성일: ${new Date(mr.created_at).toLocaleDateString()}
-- 업데이트: ${new Date(mr.updated_at).toLocaleDateString()}
-
-## MR 설명
-${mr.description || '설명 없음'}
-
-## 커밋 히스토리 (${commits.length}개)
-${commits.map((commit, index) =>
-            `${index + 1}. ${commit.title}\n   - ${commit.short_id} by ${commit.author_name}\n   - ${commit.message !== commit.title ? commit.message.replace(commit.title, '').trim() : ''}`
-        ).join('\n')}
-
-## 파일 변경사항 (${changes.length}개)
-${changes.map(change => {
-            let status = '';
-            if (change.new_file) status = '[NEW]';
-            else if (change.deleted_file) status = '[DELETED]';
-            else if (change.renamed_file) status = '[RENAMED]';
-            else status = '[MODIFIED]';
-
-            return `${status} ${change.new_path}${change.renamed_file ? ` (from ${change.old_path})` : ''}`;
-        }).join('\n')}
-
-## 코드 리뷰 및 댓글 (${userNotes.length}개)
-${userNotes.map((note, index) =>
-            `${index + 1}. ${note.author.name} (@${note.author.username}) - ${new Date(note.created_at).toLocaleDateString()}\n   "${note.body.substring(0, 200)}${note.body.length > 200 ? '...' : ''}"`
-        ).join('\n')}
-
-## 분석 요청사항
-다음 관점에서 이 MR을 분석하여 연구노트 형태로 정리해주세요:
-
-1. **주요 변경사항 분석**: 이 MR의 핵심 목적과 기술적 변경 범위
-2. **개발 과정 분석**: 커밋 메시지를 통해 보이는 개발 진행 과정과 고민점들
-3. **협업 품질 분석**: 코드 리뷰 과정에서 나타난 팀의 소통 방식과 품질 관리
-4. **기술적 의사결정**: 파일 변경 패턴을 통해 보이는 아키텍처적 결정들
-5. **개선점 제안**: 향후 비슷한 작업을 할 때 참고할 수 있는 인사이트
-
-마크다운 형식으로 작성해주세요.
-        `;
-    };
-
     generateMRAnalysis = async (client: string, mr: GitLabMR, project: GitLabProject): Promise<void> => {
         console.log(chalk.blue('\n=== AI-Powered MR Analysis ==='));
         console.log(chalk.gray('Collecting comprehensive MR data...'));
@@ -999,12 +941,7 @@ ${userNotes.map((note, index) =>
             spinner.text = 'Preparing data for AI analysis...';
             spinner.text = 'Generating analysis with Gemini AI...';
 
-            // const prompt = this.createAnalysisPrompt(mr, project, commits, changes, notes);
-            // const analysis = await this.callGeminiAPI(prompt);
-
-            // const analysis = await this.callGeminiAPI(client, mr.iid.toString());
             const analysis = await this.callGeminiAPI(client, mr, project, commits, changes, notes);
-
 
             spinner.succeed(chalk.green('AI analysis completed!'));
 
