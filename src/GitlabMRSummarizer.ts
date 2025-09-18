@@ -539,7 +539,6 @@ export class GitlabMRSummarizer implements Summarizer {
 
         navigationChoices.push({
             name: chalk.gray('Cancel'),
-            short: 'Cancel',
             value: 'cancel',
         });
 
