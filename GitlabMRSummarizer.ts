@@ -907,7 +907,7 @@ export class GitlabMRSummarizer implements Summarizer {
     };
 
     private callGeminiAPI = async (client: string, mr: GitLabMR, project: GitLabProject, commit: GitLabCommit[], changes: GitLabChanges[], notes: GitLabNote[]): Promise<string> => {
-        const response: AxiosResponse = await this.gitlabInfo.client.post(`http://localhost:8080/api/v1/request`,{
+        const response: AxiosResponse = await this.gitlabInfo.client.post(`${process.env.GEMINI_QUEUE_SERVER_API}/request`,{
                 userID: client,
                 payload: mr.iid.toString(),
                 gitLabMR: mr,
