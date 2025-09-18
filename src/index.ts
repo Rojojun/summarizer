@@ -1,5 +1,7 @@
+#!/usr/bin/env node
+
 import {GitlabInfo} from "./GitlabInfo";
-import {GitlabMRHandler} from "./GitlabMRHandler";
+import {GitlabMRSummarizer} from "./GitlabMRSummarizer";
 import {MR_FINDER_GOODBYE, MR_FINDER_TITLE} from "./Title";
 import inquirer from "inquirer";
 import chalk from "chalk";
@@ -26,7 +28,7 @@ const main = async () => {
     const { url: gitlabUrl, token: gitlabToken } = await getGitlabConfig();
 
     const info = new GitlabInfo(gitlabUrl, gitlabToken);
-    const handler = new GitlabMRHandler(info);
+    const handler = new GitlabMRSummarizer(info);
 
     while (true) {
         const selectedProject = await handler.selectProject();
@@ -47,7 +49,7 @@ const main = async () => {
             continue;
         }
 
-        const selectedMR = await handler.selectMergeRequest(selectedProject);
+        const selectedMR = await handler.selectMergeRequest(info.accessToken, selectedProject);
 
         if (!selectedMR) {
             const { action } = await inquirer.prompt([
@@ -79,7 +81,7 @@ const main = async () => {
                 case 'select_project':
                     continue;
                 case 'retry_mr':
-                    const retryMR = await handler.selectMergeRequest(selectedProject);
+                    const retryMR = await handler.selectMergeRequest(info.accessToken, selectedProject);
                     if (retryMR) {
                         console.log(chalk.green('MR selected successfully!'));
                     }

@@ -1,0 +1,6 @@
+.env
+.github/
+.idea/
+node_modules/
+src/
+tsconfig.json
