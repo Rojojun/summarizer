@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import 'dotenv/config';
 import {GitlabInfo} from "./GitlabInfo";
 import {GitlabMRSummarizer} from "./GitlabMRSummarizer";
 import {MR_FINDER_GOODBYE, MR_FINDER_TITLE} from "./Title";
