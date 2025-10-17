@@ -1,6 +1,6 @@
 {
   "name": "git-summerizer",
-  "version": "1.0.3",
+  "version": "1.0.7",
   "description": "A CLI tool to summarize git commits",
   "main": "./dist/index.js",
   "bin": {

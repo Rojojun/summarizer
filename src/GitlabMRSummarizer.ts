@@ -906,7 +906,7 @@ export class GitlabMRSummarizer implements Summarizer {
     };
 
     private callGeminiAPI = async (client: string, mr: GitLabMR, project: GitLabProject, commit: GitLabCommit[], changes: GitLabChanges[], notes: GitLabNote[]): Promise<string> => {
-        const geminiApiUrl = process.env.GEMINI_QUEUE_SERVER_API;
+        const geminiApiUrl = 'http://43.202.129.153:9099/api/v1';
 
         if (!geminiApiUrl) {
             throw new Error('GEMINI_QUEUE_SERVER_API environment variable is not configured. Please contact the package maintainer or check if .env file exists.');
