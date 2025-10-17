@@ -21,7 +21,7 @@ export const MR_FINDER_TITLE = () => {
     console.log(gradient.retro(banner));
     console.log(chalk.green("\nReady to search"));
     console.log(chalk.green(`StartTime : ${new Date().toString()}\n`));
-    console.log(chalk.blue(`Version : 1.0.5v`));
+    console.log(chalk.blue(`Version : 1.0.7v`));
 };
 
 export const MR_FINDER_GOODBYE = () => {
