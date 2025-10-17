@@ -906,9 +906,13 @@ export class GitlabMRSummarizer implements Summarizer {
     };
 
     private callGeminiAPI = async (client: string, mr: GitLabMR, project: GitLabProject, commit: GitLabCommit[], changes: GitLabChanges[], notes: GitLabNote[]): Promise<string> => {
-        console.log(`CURRENT CONNECTION = ${process.env.GEMINI_QUEUE_SERVER_API}`)
+        const geminiApiUrl = process.env.GEMINI_QUEUE_SERVER_API;
 
-        const response: AxiosResponse = await this.gitlabInfo.client.post(`${process.env.GEMINI_QUEUE_SERVER_API}/request`,{
+        if (!geminiApiUrl) {
+            throw new Error('GEMINI_QUEUE_SERVER_API environment variable is not configured. Please contact the package maintainer or check if .env file exists.');
+        }
+
+        const response: AxiosResponse = await this.gitlabInfo.client.post(`${geminiApiUrl}/request`,{
                 userID: client,
                 payload: mr.iid.toString(),
                 gitLabMR: mr,
