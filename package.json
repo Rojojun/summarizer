@@ -8,11 +8,11 @@
   },
   "types": "./dist/index.d.ts",
   "files": [
-    "dist",
-    ".env"
+    "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "node build.js",
+    "build:tsc": "tsc",
     "dev": "tsx src/index.ts",
     "start": "npm run build && node dist/index.js",
     "prepublishOnly": "npm run build"
@@ -39,6 +39,7 @@
     "@types/gradient-string": "^1.1.6",
     "@types/inquirer": "^9.0.9",
     "@types/node": "^24.3.1",
+    "esbuild": "^0.25.11",
     "tsx": "^4.20.6",
     "typescript": "^5.9.2"
   }
