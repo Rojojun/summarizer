@@ -17,10 +17,14 @@ on:
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TOKEN_GITHUB }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -42,10 +46,14 @@ jobs:
   publish:
     needs: test-and-build
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TOKEN_GITHUB }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
