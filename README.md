@@ -147,8 +147,8 @@ npm link
 
 ## 지원
 
-- **GitHub Issues**: [Issue 생성](https://github.com/your-username/git-summerizer/issues)
-- **Documentation**: [GitHub Wiki](https://github.com/your-username/git-summerizer/wiki)
+- **GitHub Issues**: [Issue 생성](https://github.com/Rojojun/summarizer/issues)
+- **Documentation**: [GitHub Wiki](https://github.com/Rojojun/summarizer/wiki)
 - **Email**: zoloman316@gmail.com
 
 ---
